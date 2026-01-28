@@ -28,9 +28,23 @@ const logger = createLogger({
 });
 
 if (!isProd) {
+  const consoleFormat = format.printf(
+    ({ level, message, timestamp, stack }) => {
+      let logMessage = `${timestamp} ${level}: ${message}`;
+      // For errors, append the first line of the stack trace which shows the location
+      if (stack && typeof stack === 'string') {
+        const firstLine = (stack as string).split('\n')[1];
+        if (firstLine) {
+          logMessage += ` (at ${firstLine.trim()})`;
+        }
+      }
+      return logMessage;
+    },
+  );
+
   logger.add(
     new transports.Console({
-      format: format.combine(format.colorize({ all: true }), format.simple()),
+      format: format.combine(format.colorize({ all: true }), consoleFormat),
     }),
   );
 }
