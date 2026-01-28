@@ -4,6 +4,7 @@ import type { ConnectOptions } from 'mongoose';
 
 // Custom imports
 import config from '@/config';
+import logger from './winston';
 
 if (config.NODE_ENV === 'development') {
   mongoose.set('debug', true);
@@ -24,10 +25,10 @@ const connectDatabase = async (): Promise<void> => {
     throw new Error('MongoDB URI is missing');
   }
   mongoose.connection.on('connected', () =>
-    console.log('Mongoose conected to DB.'),
+    logger.info('Mongoose connected to DB.'),
   );
   mongoose.connection.on('error', (err) =>
-    console.log('Mongoose conection error.', err),
+    logger.error('Mongoose connection error.', { error: err }),
   );
 
   try {
@@ -37,7 +38,7 @@ const connectDatabase = async (): Promise<void> => {
       throw new Error('Mongoose connected but readystate is not 1');
     }
   } catch (error) {
-    console.error('Database connection failed!', error);
+    logger.error('Database connection failed!', { error });
     throw error;
   }
 };
@@ -45,9 +46,9 @@ const connectDatabase = async (): Promise<void> => {
 const disconnectDatabase = async (): Promise<void> => {
   try {
     await mongoose.disconnect();
-    console.log('Database disconnected!');
+    logger.info('Database disconnected!');
   } catch (error) {
-    console.log('Error during database disconnection!', error);
+    logger.error('Error during database disconnection!', { error });
   }
 };
 

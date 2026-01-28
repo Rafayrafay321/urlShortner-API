@@ -135,3 +135,63 @@ This document outlines the tasks to make this URL shortener project industry-rea
   - [ ] It should run linting, testing, and building to ensure code quality.
 
 <!-- Raw instructions.. -->
+
+High-Level Plan: Implementing Logging with Winston
+
+1. Configure the Winston Logger (`src/lib/winston.ts`)
+
+This file will be the heart of your logging setup. It's where you'll create and configure your logger instance.
+
+- Objective: Create a centralized logger that you can import and use anywhere in your app.
+- What to do:
+  1.  Import necessary modules from the winston library (createLogger, format, transports).
+  2.  Define Log Levels: Think about the different levels of information you want to log (e.g., error, warn, info, http, debug). Winston has these
+      built-in.
+  3.  Choose Transports: A transport is where your logs will be sent. A good start is to use:
+      - transports.Console: To print logs to your terminal. This is great for development.
+      - transports.File: To save logs to files. You should create separate files for errors (error.log) and for all other logs (combined.log).
+  4.  Define a Format: How should each log message look? Winston's format object is powerful. Combine formats using format.combine() to include:
+      - A timestamp (format.timestamp()).
+      - Colorization for readability in the console (format.colorize()).
+      - A simple, readable print format (format.printf()).
+  5.  Create and Export the Logger: Use createLogger() with your defined levels, transports, and format. Export this logger instance as the default
+      module.
+
+2. Integrate HTTP Request Logging (Middleware)
+
+You need a way to automatically log every incoming HTTP request. The best way to do this is with middleware.
+
+- Objective: Log key information for every API request, like the method, URL, status code, and response time.
+- What to do:
+  1.  Choose a Tool: The morgan library is excellent for this and is designed to work with Winston. First, add it to your project.
+  2.  Create a Middleware File: You could create a new file, perhaps src/middleware/loggingMiddleware.ts.
+  3.  Connect `morgan` to `winston`: morgan can take a "stream" as an option. You can create a stream object that directs morgan's output to your
+      Winston logger's http level. This elegantly integrates the two libraries.
+  4.  Apply the Middleware: In src/server.ts, import your new logging middleware and add it to your Express application using app.use(). It should be
+      one of the very first middleware you apply.
+
+3. Implement Centralized Error Logging (`src/middleware/errorHandler.ts`)
+
+Your existing errorHandler.ts is the perfect place to ensure all application errors are logged.
+
+- Objective: Whenever your application throws an error and it's caught by your error handler, log the important details.
+- What to do:
+  1.  Import your logger into src/middleware/errorHandler.ts.
+  2.  Log the Error: Inside the error handling function, before you send a response to the client, use your logger to record the error. Log the
+      err.message and perhaps the err.stack for debugging purposes. Use the error log level here.
+
+4. Add Custom Logging in Your Business Logic (Controllers & Services)
+
+For more specific insights, you'll want to add manual log statements in important parts of your code.
+
+- Objective: Log key events in your application's logic, such as a user successfully registering or a URL being created.
+- What to do:
+  1.  Import your logger into any controller or service file where you want to add logging (e.g., src/controllers/auth/register.ts).
+  2.  Add Log Statements: At key points in your functions, add calls to your logger. For example:
+      - logger.info('User registered successfully: user.id')
+      - logger.warn('Failed login attempt for user: user.email')
+      - logger.debug('Running database query: ...')
+
+By following this plan, you will have a powerful and well-structured logging system. You'll learn how to configure Winston, how to automatically log
+requests, how to handle errors, and how to add specific, meaningful logs to your application. Let me know if you'd like me to elaborate on any of these
+steps

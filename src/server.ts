@@ -8,6 +8,7 @@ import cors from 'cors';
 // Custom Modules.
 import config from '@/config';
 import corsOptions from '@/lib/cors';
+import logger from '@/lib/winston';
 import { connectDatabase, disconnectDatabase } from '@/lib/mongoose';
 import router from '@/routes';
 import errorHandler from '@/middleware/errorHandler';
@@ -36,10 +37,10 @@ server.use(cors(corsOptions));
 
     // Start the server and listen on the configured port.
     server.listen(config.PORT, () => {
-      console.log(`Server listening at http://localhost:${config.PORT}`);
+      logger.info(`Server listening at http://localhost:${config.PORT}`);
     });
   } catch (error) {
-    console.log('Faild to start Server', error);
+    logger.error('Failed to start Server', { error });
 
     // In production, exit the process to avoid unstable state.
     if (config.NODE_ENV === 'production') {
@@ -52,10 +53,10 @@ server.use(cors(corsOptions));
 const serverTermination = async (signal: NodeJS.Signals): Promise<void> => {
   try {
     disconnectDatabase();
-    console.log('Server Shutdown', signal);
+    logger.info('Server Shutdown', { signal });
     process.exit(0);
   } catch (error) {
-    console.log('Error during server shutdown:', error);
+    logger.error('Error during server shutdown:', { error });
   }
 };
 

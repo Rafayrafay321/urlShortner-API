@@ -1,5 +1,6 @@
-// Customs imports
+// Custom imports
 import { AppError } from '@/lib/appError';
+import logger from '@/lib/winston';
 
 // Types
 import type { Request, Response, NextFunction } from 'express';
@@ -20,7 +21,12 @@ const errorHandler = (
   }
 
   // For any other unexpected error log the error and send generic 500 response
-  console.log('UNHANDELED_ERROR: ', err);
+  logger.error('UNHANDLED_ERROR', {
+    error: err.message,
+    stack: err.stack,
+    path: req.path,
+    method: req.method,
+  });
   res.status(500).json({
     code: 'Server Error',
     message: 'An unexpected error occurred.',

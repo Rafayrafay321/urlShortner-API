@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import type { HydratedDocument, Model, Types } from 'mongoose';
 
 // Custom Modules
+import logger from '@/lib/winston';
 import { IUser, User } from '@/models/user';
 import { Url } from '@/models/url';
 import { IUrl } from '@/models/url';
@@ -25,7 +26,9 @@ export const userExists = async (
   params: UserQuery,
 ): Promise<HydratedDocument<IUser> | null> => {
   if (mongoose.connection.readyState !== 1) {
-    console.log('Database not connected. cannot check User existence.');
+    logger.warn('Database not connected. Cannot check User existence.', {
+      params,
+    });
     return null;
   }
   const query: UserQuery = {};
@@ -47,7 +50,9 @@ export const urlExists = async (
   params: UrlQuery,
 ): Promise<HydratedDocument<IUrl> | null> => {
   if (mongoose.connection.readyState !== 1) {
-    console.log('Database not connected. Cannot check for the url existence');
+    logger.warn('Database not connected. Cannot check for the url existence', {
+      params,
+    });
     return null;
   }
   const query: UrlQuery = {};

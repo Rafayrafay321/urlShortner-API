@@ -14,6 +14,7 @@ const config = {
   PORT: process.env.PORT!,
   NODE_ENV,
   CORS_WHITELIST,
+  LOG_LEVEL: process.env.LOG_LEVEL,
   WINDOW_MS: _1H_IN_MILLISECONDS,
   MONGO_CONNECTION_URI: process.env.MONGO_CONNECTION_URI!,
   WHITELISTED_EMAILS: process.env.WHITELISTED_EMAILS?.split(','),
