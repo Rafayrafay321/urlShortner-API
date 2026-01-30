@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 
 // Type
-type NodeEnv = 'development' | 'production';
+type NodeEnv = 'development' | 'production' | 'test';
 
 dotenv.config();
 

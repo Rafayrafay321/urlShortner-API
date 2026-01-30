@@ -27,7 +27,6 @@ const errorHandler = (
     path: req.path,
     method: req.method,
   });
-  console.log('Test Crash: ', err);
   res.status(500).json({
     code: 'Server Error',
     message: 'An unexpected error occurred.',

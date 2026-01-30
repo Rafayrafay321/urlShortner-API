@@ -8,12 +8,20 @@ import type { Request, Response, NextFunction } from 'express';
 
 type RequestBody = Pick<IUser, 'name' | 'email' | 'password' | 'role'>;
 
-const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
     const { name, email, password, role } = req.body as RequestBody;
 
     if (role === 'Admin' && !config.WHITELISTED_EMAILS?.includes(email)) {
-      throw new AppError(400, 'Bad Request', 'You are not allowed to create an admin account');
+      throw new AppError(
+        400,
+        'Bad Request',
+        'You are not allowed to create an admin account',
+      );
     }
 
     const isExists = await userExists({ email });
@@ -32,7 +40,11 @@ const register = async (req: Request, res: Response, next: NextFunction): Promis
 
     res.status(201).json({
       message: 'User Created Successfully',
-      user: user,
+      User: {
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (error) {
     next(error);
