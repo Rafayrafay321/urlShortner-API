@@ -6,15 +6,19 @@ import config from '@/config';
 
 const corsOptions: CorsOptions = {
   origin(requestOrigin, callback) {
-    if (requestOrigin && config.CORS_WHITELIST.includes(requestOrigin)) {
-      callback(null, true);
-    } else {
-      callback(
-        config.NODE_ENV === 'development'
-          ? null
-          : new Error('Not allowed by CORS'),
-      );
+    if (!requestOrigin) {
+      return callback(null, true);
     }
+
+    if (requestOrigin && config.CORS_WHITELIST.includes(requestOrigin)) {
+      return callback(null, true);
+    }
+
+    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
   },
 };
 
