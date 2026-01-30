@@ -43,4 +43,5 @@ describe('Auth Routes', () => {
     expect(userCreated?.name).toBe(user.name);
     expect(userCreated?.password).not.toBe(user.password);
   });
+  it();
 });
