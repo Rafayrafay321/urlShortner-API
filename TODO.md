@@ -147,3 +147,69 @@ piece:
 - User API Keys: Allow users to generate their own API keys so they can use your URL shortening service from their own applications.
 - - Link Expiration: Add an option to have a link automatically expire after a certain date or a certain number of clicks.
 - Password-Protected Links: Require a password to be entered before redirecting to the original URL for sensitive links.
+
+<!-- Testing PLAN -->
+
+> 1.  Unit Tests (/lib directory)
+
+We'll create test files for each of these to validate their logic in isolation.
+
+- `lib/jwt.ts`:
+  - Test signJwt: Ensure it returns a token string for a given payload.
+  - Test verifyJwt: Test with a valid token, an invalid token, and an expired token.
+- `lib/password.ts`:
+  - Test hashPassword: Ensure it returns a hash different from the input.
+  - Test comparePassword: Test with both correct and incorrect passwords.
+- `lib/urlGenerator.ts`:
+  - Test generateUrl: Ensure it returns a string of the expected format/length.
+
+1. Integration Tests (/src/**tests**)
+
+We will expand your auth.test.ts and create a new url.test.ts.
+
+- `auth.test.ts` (Enhancements)
+  - Login:
+    - Add a test for login with an incorrect password (should return 401 Unauthorized).
+    - Add a test for a non-existent user (should return 404 Not Found or 401).
+  - Logout:
+    - Add a describe block for POST /auth/logout.
+    - Test that it successfully clears the accesstoken cookie.
+  - Refresh Token:
+    - Add a describe block for GET /auth/refresh.
+    - Test that a new accesstoken is issued if a valid refresh token is present.
+
+- `url.test.ts` (New File)
+  - Setup: Use the same beforeAll, afterAll, afterEach structure. You'll need to register and log in a user to get an auth token for protected routes.
+  - `POST /url/create`:
+    - Test successful URL creation (201).
+    - Test for invalid URL format (400).
+    - Test without authentication (401).
+  - `GET /url/list`:
+    - Test that it returns a list of URLs for the authenticated user.
+    - Test without authentication (401).
+  - `PATCH /url/update/:id`:
+    - Test successful update (200).
+    - Test updating a URL that doesn't exist (404).
+    - Test a user trying to update another user's URL (403 Forbidden/404 Not Found).
+  - `DELETE /url/delete/:id`:
+    - Test successful deletion (200 or 204).
+    - Test deleting a URL that doesn't exist (404).
+    - Test a user trying to delete another user's URL (403/404).
+
+- `redirect.test.ts` (New File)
+  - `GET /:shortId`:
+    - Test that a valid shortId redirects (302) to the correct original URL.
+    - Test that an invalid or non-existent shortId returns a 404.
+
+This plan covers all the core functionality of your MVP. When this is complete, your application will be very well-tested and ready for the next steps.
+
+✓ Analyze existing tests to understand the current setup.
+✓ Create a comprehensive test plan.
+» Implement unit tests for `lib/password.ts`.
+☐ Implement unit tests for `lib/jwt.ts`.
+☐ Implement unit tests for `lib/urlGenerator.ts`.
+☐ Enhance integration tests for authentication endpoints.
+☐ Implement integration tests for URL management endpoints.
+☐ Implement integration tests for the redirect endpoint.
+☐ Guide on Dockerizing the application.
+☐ Guide on setting up a CI/CD pipeline.

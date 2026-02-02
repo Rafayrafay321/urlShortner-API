@@ -1,14 +1,17 @@
-import { generateUrl } from '@/lib/urlGenerator';
+import { genUniqueURL } from '@/lib/generateUniqueURL';
 import { Url } from '@/models/url';
 import { urlExists } from '@/utils';
-import { AppError } from '@/lib/appError';
 
 import type { Request, Response, NextFunction } from 'express';
 import type { Types } from 'mongoose';
 
 type RequestBody = { url: string };
 
-const createUrl = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const createUrl = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
     const { url: originalUrl } = req.body as RequestBody;
     const userId = req.userId as Types.ObjectId;
@@ -23,23 +26,7 @@ const createUrl = async (req: Request, res: Response, next: NextFunction): Promi
       return;
     }
 
-    let shortUrl: string = '';
-    let isUnique = false;
-    let attempts = 0;
-    const MAX_ATTEMPTS = 5;
-
-    while (!isUnique && attempts < MAX_ATTEMPTS) {
-      shortUrl = generateUrl();
-      const shortUrlAlreadyExists = await urlExists({ shortUrl });
-      if (!shortUrlAlreadyExists) {
-        isUnique = true;
-      }
-      attempts++;
-    }
-
-    if (!isUnique) {
-      throw new AppError(500, 'Server Error', 'Could not generate a unique URL. Please try again');
-    }
+    const shortUrl = await genUniqueURL();
 
     await Url.create({
       originalUrl,
