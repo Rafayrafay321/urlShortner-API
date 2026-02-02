@@ -5,6 +5,7 @@ let mongod: MongoMemoryServer;
 
 export const connect = async () => {
   // Prevent connecting if already connected
+  if (mongod) return;
   if (mongoose.connection.readyState !== 0) return;
 
   mongod = await MongoMemoryServer.create();
@@ -16,9 +17,12 @@ export const connect = async () => {
 // Drop databse, close the connection and stop mongod.
 export const closeDatabase = async () => {
   if (mongod) {
-    await mongoose.connection.dropDatabase();
-    await mongoose.connection.close();
-    await mongod.stop();
+    try {
+      await mongoose.connection.dropDatabase();
+      await mongoose.connection.close();
+    } finally {
+      await mongod.stop();
+    }
   }
 };
 

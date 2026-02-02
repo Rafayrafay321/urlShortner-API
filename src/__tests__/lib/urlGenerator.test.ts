@@ -24,7 +24,7 @@ describe('urlGeneration Utilites', () => {
       expect(typeof shortUrl).toBe('string');
     });
 
-    it('Should generate an unique shortURL', () => {
+    it('Should generate different URLs on subsequesnt calls', () => {
       // Empty set for storing Unique URLs
       const mySet = new Set();
       const MAX_ITERATIONS = 5;

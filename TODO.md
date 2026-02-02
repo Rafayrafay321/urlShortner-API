@@ -213,3 +213,75 @@ This plan covers all the core functionality of your MVP. When this is complete, 
 ☐ Implement integration tests for the redirect endpoint.
 ☐ Guide on Dockerizing the application.
 ☐ Guide on setting up a CI/CD pipeline.
+
+Of course. It's great that you're thinking about expanding your test coverage. Based on your project structure, here is a logical list of which tests to
+write next, from highest to lowest priority.
+
+Priority 1: URL Controller Logic (Integration Tests)
+
+You have controller files for creating, deleting, listing, and updating URLs, but no integration tests for them. This is the most important area to test
+next.
+
+File to create: src/**tests**/url.test.ts
+
+Instructions:
+
+1.  Setup:
+    - Structure the file like auth.test.ts, using supertest to make requests and db.handler to manage the database state.
+    - You will need to simulate a logged-in user to test these protected routes. In a beforeEach or at the start of your tests, register and log in a
+      user to get their auth token.
+
+2.  Test Case Instructions (`describe('/api/url', ...)`):
+    - `POST /api/url` (Create URL):
+      - Write a test for a successful creation (201 Created). Assert that the response body contains the new URL object.
+      - Write a test for an invalid URL (e.g., "not-a-url"). Expect a 400 Bad Request.
+      - Write a test that tries to create a URL without being authenticated. Expect a 401 Unauthorized.
+    - `GET /api/url` (List URLs):
+      - Write a test where you first create a few URLs, then make a GET request. Assert that the response body is an array containing the URLs you
+        created.
+      - Write a test for a user who has no URLs. Expect an empty array.
+      - Write a test that tries to list URLs without being authenticated. Expect a 401 Unauthorized.
+    - `DELETE /api/url/:id` (Delete URL):
+      - Write a test where you create a URL, get its ID, then send a DELETE request. Expect a 200 OK or 204 No Content. Verify it's gone by trying to
+        list it again.
+      - Write a test where a user tries to delete a URL belonging to another user. Expect a 401 Unauthorized or 404 Not Found.
+
+---
+
+Priority 2: Redirect Logic (Integration Test)
+
+This is a core feature of your application.
+
+File to create: src/**tests**/redirect.test.ts
+
+Instructions:
+
+1.  `GET /:shortUrl`:
+    - Write a test for a successful redirect.
+      - Arrange: First, create a short URL in your database (either via the API or directly).
+      - Act: Make a GET request to /:shortUrl using supertest.
+      - Assert: Expect a 302 Found status code. Assert that the Location header in the response is equal to the original, long URL.
+    - Write a test for a shortUrl that does not exist. Expect a 404 Not Found status.
+
+---
+
+Priority 3: Middleware (Unit Tests)
+
+You have several middleware functions that can be unit-tested in isolation.
+
+File to create: src/**tests**/middleware/authMiddleware.test.ts
+
+Instructions:
+
+1.  Test the Authentication Middleware (`authMiddleware`):
+    - This middleware likely checks for a JWT and attaches the user to the request object.
+    - Setup: You will need to mock the req, res, and next objects. vi.fn() is perfect for this.
+    - Test Case 1 (Successful Auth):
+      - Create a valid auth token.
+      - Set it in the mocked request's headers/cookies.
+      - Call authMiddleware(req, res, next).
+      - Assert that next() was called without any arguments.
+      - Assert that req.user was successfully attached.
+    - Test Case 2 (No Token):
+      - Call the middleware with no token in the request.
+      - Assert that next() was called with an AppError (or however you handle auth errors). Assert the error has a 401 status code.
