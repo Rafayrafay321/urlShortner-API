@@ -1,0 +1,9 @@
+services:
+  api:
+    build: .
+    restart: always
+    ports:
+      - '${PORT}:${PORT}'
+    environment:
+      - MONGO_URI=${MONGO_CONNECTION_URI}
+      - NODE_ENV=production
