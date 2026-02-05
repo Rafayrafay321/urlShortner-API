@@ -9,7 +9,6 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "types": ["vitest/globals"],
     "esModuleInterop": true,
     "removeComments": true,
     "preserveConstEnums": true,

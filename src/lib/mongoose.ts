@@ -1,4 +1,3 @@
-// Node modules
 import mongoose from 'mongoose';
 import type { ConnectOptions } from 'mongoose';
 
@@ -10,7 +9,7 @@ if (config.NODE_ENV === 'development') {
   mongoose.set('debug', true);
 }
 
-const connectOptions: ConnectOptions = {
+export const connectOptions: ConnectOptions = {
   family: 4,
   serverSelectionTimeoutMS: 5000,
   serverApi: {
