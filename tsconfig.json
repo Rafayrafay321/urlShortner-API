@@ -5,7 +5,7 @@
     "rootDir": "src",
     "outDir": "dist",
     "baseUrl": "./",
-    "typeRoots": ["./src/@types", "./node_modules/@types", "./node_modules"],
+    "typeRoots": ["./src/@types", "./node_modules/@types"],
     "paths": {
       "@/*": ["src/*"]
     },
