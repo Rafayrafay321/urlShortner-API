@@ -43,6 +43,7 @@
     "jiti": "^2.6.1",
     "nodemon": "^3.1.11",
     "prettier": "^3.7.4",
+    "prisma": "^7.3.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.3",
