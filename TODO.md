@@ -168,3 +168,42 @@ features.
 ☐ Implement error handling for all new features, such as invalid custom aliases, expired links, incorrect passwords, or invalid API keys.
 ☐ Write unit and integration tests for all new features and modifications to ensure robustness and correctness.
 ☐ Update API documentation to reflect all new endpoints, request/response formats, and features.
+
+Choose and Install a PostgreSQL ORM/Driver:
+_ Decide on a Node.js library to interact with PostgreSQL. Popular choices include:
+_ Sequelize: A mature, promise-based ORM for Node.js.
+_ Prisma: A modern database toolkit with a type-safe query builder.
+_ pg: A lightweight, low-level PostgreSQL client for Node.js. \* Install the chosen library (e.g., npm install sequelize pg pg-hstore or npm install prisma).
+
+2.  Update Database Connection:
+    - Locate the current MongoDB connection logic (likely in src/lib/mongoose.ts).
+    - Create a new configuration file or modify the existing one (src/config/index.ts) to include your PostgreSQL connection details (host, port, user,
+      password, database).
+    - Implement the connection logic for PostgreSQL using the library you installed.
+
+3.  Migrate Models/Schemas:
+    - Your current Mongoose schemas are in src/models/url.ts and src/models/user.ts.
+    - You will need to redefine these schemas using the syntax of your new ORM (e.g., Sequelize models or Prisma schema). This involves defining the
+      table columns, data types, and relationships.
+
+4.  Create Migrations (Recommended):
+    - Use the migration feature of your chosen ORM (both Sequelize and Prisma have powerful migration tools) to create database tables based on your new
+      models. This allows you to version control your database schema.
+
+5.  Refactor Database Queries:
+    - Go through your controllers (src/controllers/\*_/_.ts) and any other file that uses Mongoose queries.
+    - Replace all Mongoose-specific methods (.find(), .findOne(), .create(), .findByIdAndUpdate(), etc.) with the equivalent methods from your new ORM.
+      The syntax will be different.
+
+6.  Data Migration (Optional but Important):
+    - If you need to move existing data from MongoDB to PostgreSQL, you will need to create a separate script. This script would:
+      1.  Connect to both MongoDB and PostgreSQL.
+      2.  Read data from your MongoDB collections.
+      3.  Transform the data to match your new PostgreSQL schema.
+      4.  Insert the transformed data into your PostgreSQL tables.
+
+7.  Remove Old Dependencies:
+    - Once you have fully migrated and tested your application, you can uninstall the MongoDB-related packages (like mongoose) from your package.json to
+      clean up the project.
+
+Let me know if you'd like a more detailed explanation for any of these steps.

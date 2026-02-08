@@ -17,6 +17,7 @@ import { connectDatabase, disconnectDatabase } from '@/lib/mongoose';
     });
   } catch (error) {
     logger.error('Failed to start Server', { error });
+    console.log(error);
 
     // In production, exit the process to avoid unstable state.
     if (config.NODE_ENV === 'production') {

@@ -1,23 +1,35 @@
-# Start with Base Image of NODE
-FROM node:alpine
+# ---------- Build stage ----------
+FROM node:alpine AS builder
 
-# Set the "home base" inside the container
+# App directory
 WORKDIR /app
 
-# Copy files from my local folder into the /app folder
+# Install dependencies
 COPY package*.json ./
-
-# Run command inside /app
 RUN npm install
 
-# Copy remaining files
+# Copy source code
 COPY . .
 
-# Compile .ts files
+# Build TypeScript -> dist
 RUN npm run build
 
-# Exposing PORT
-EXPOSE 3000
+# ---------- Production stage ----------
+FROM node:alpine
 
-# Start the application using the compiled javascript
-CMD ["npm","run","dev"]
+# Set environment
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+
+# App directory
+WORKDIR /app
+
+# Install production-only dependencies
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copy compiled output
+COPY --from=builder /app/dist ./dist
+
+# Start server
+CMD ["node","dist/server.js"]
