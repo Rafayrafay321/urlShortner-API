@@ -5,10 +5,71 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id                 String   @id @default(cuid())
+  name               String
+  email              String   @unique
+  password           String
+  role               Role     @default(USER)
+  passwordResetToken String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  urls         Url[]
+  refreshToken RefreshToken?
+
+  @@index([email])
+  @@map("users")
+}
+
+// Enum for role
+enum Role {
+  USER
+  ADMIN
+}
+
+model Url {
+  id         String   @id @default(cuid())
+  userId     String
+  orignalUrl String
+  shortUrl   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id])
+  click Click?
+
+  @@map("urls")
+}
+
+model RefreshToken {
+  tokenId            String  @id @default(cuid())
+  refreshToken       String?
+  refreshTokenStatus Status  @default(revoked)
+  userId             String  @unique
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+// enum for refreshTokenStatus
+enum Status {
+  active
+  revoked
+}
+
+model Click {
+  id          String   @id @default(cuid())
+  urlId       String   @unique
+  clickCounts Int
+  createdAt   DateTime @default(now())
+
+  url Url @relation(fields: [urlId], references: [id])
 }

@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import type { ConnectOptions } from 'mongoose';
 
 // Custom imports
-import config from '@/config';
+import config from '@/config/config';
 import logger from './winston';
 
 if (config.NODE_ENV === 'development') {

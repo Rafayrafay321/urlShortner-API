@@ -1,7 +1,7 @@
 import { AppError } from '@/lib/appError';
 import { comparePassword } from '@/lib/password';
 import { generateRefreshToken, generateAccessToken } from '@/lib/jwt';
-import config from '@/config';
+import config from '@/config/config';
 import { User } from '@/models/user';
 
 import type { Request, Response, NextFunction } from 'express';

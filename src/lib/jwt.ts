@@ -2,7 +2,7 @@
 import jwt from 'jsonwebtoken';
 
 // Custom imports
-import config from '@/config';
+import config from '@/config/config';
 
 // Types
 // import type { Types } from 'mongoose';

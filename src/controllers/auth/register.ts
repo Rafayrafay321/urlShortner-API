@@ -1,5 +1,5 @@
 import { User, type IUser } from '@/models/user';
-import config from '@/config';
+import config from '@/config/config';
 import { hashPassword } from '@/lib/password';
 import { AppError } from '@/lib/appError';
 import { userExists } from '@/utils/index';

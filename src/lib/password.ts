@@ -2,7 +2,7 @@
 import bcrypt from 'bcrypt';
 
 // Custom Imports
-import config from '@/config';
+import config from '@/config/config';
 
 const hashPassword = async (password: string): Promise<string> => {
   const saltRounds = config.SALT_ROUNDS;

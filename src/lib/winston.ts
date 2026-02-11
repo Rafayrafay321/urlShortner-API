@@ -2,7 +2,7 @@
 import { createLogger, transports, format } from 'winston';
 
 // Custom imports
-import config from '@/config';
+import config from '@/config/config';
 
 const isProd = config.NODE_ENV === 'production';
 

@@ -1,6 +1,6 @@
 // Custom Modules.
 import app from '@/app';
-import config from '@/config';
+import config from '@/config/config';
 import logger from '@/lib/winston';
 import { connectDatabase, disconnectDatabase } from '@/lib/mongoose';
 
