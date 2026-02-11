@@ -2,12 +2,15 @@ import { AppError } from '@/lib/appError';
 import { comparePassword } from '@/lib/password';
 import { generateRefreshToken, generateAccessToken } from '@/lib/jwt';
 import config from '@/config/config';
-import { User } from '@/models/user';
+import { prisma } from '@/config/prisma';
 
 import type { Request, Response, NextFunction } from 'express';
-import type { IUser } from '@/models/user';
 
-type RequestBody = Pick<IUser, 'email' | 'password'>;
+//TODO Replace later with ZOD
+type loginRequestBody = {
+  email: string;
+  password: string;
+};
 
 const login = async (
   req: Request,
@@ -15,9 +18,9 @@ const login = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { email, password } = req.body as RequestBody;
+    const { email, password } = req.body as loginRequestBody;
 
-    const user = await User.findOne({ email }).select('+password');
+    const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
       throw new AppError(401, 'Bad Request', 'Invalid Email or Password');
@@ -28,12 +31,26 @@ const login = async (
       throw new AppError(401, 'Bad Request', 'Invalid Email or Password');
     }
 
-    const userId = user._id.toString();
+    const userId = user.id;
     const refreshToken = generateRefreshToken({ userId });
     const accessToken = generateAccessToken({ userId });
 
-    user.refreshToken = refreshToken;
-    await user.save();
+    await prisma.$transaction(async (tx) => {
+      await tx.refreshToken.upsert({
+        where: { userId },
+        update: {
+          refreshToken: refreshToken,
+          refreshTokenStatus: 'active',
+        },
+        create: {
+          refreshToken: refreshToken,
+          refreshTokenStatus: 'active',
+          user: {
+            connect: { id: userId },
+          },
+        },
+      });
+    });
 
     res.cookie('refreshToken', refreshToken, {
       maxAge: config.COOKIE_MAX_AGE,
