@@ -1,18 +1,16 @@
 // Node modules
-import mongoose from 'mongoose';
+
 import type { HydratedDocument, Model } from 'mongoose';
 
 // Custom Modules
-import logger from '@/lib/winston';
+
 import { prisma } from '@/config/prisma';
-import { Url } from '@/models/url';
-import { IUrl } from '@/models/url';
 import { Prisma } from '@prisma/client';
 
 // Types
 type UrlQuery = {
   userId?: string;
-  originalUrl?: string;
+  orignalUrl?: string;
   shortUrl?: string;
 };
 
@@ -33,30 +31,20 @@ export const userExists = async (params: UserQuery) => {
   return prisma.user.findFirst({ where: { OR: condition } });
 };
 
-// Function returning whole document of the URL exisiting.
-export const urlExists = async (
-  params: UrlQuery,
-): Promise<HydratedDocument<IUrl> | null> => {
-  if (mongoose.connection.readyState !== 1) {
-    logger.warn('Database not connected. Cannot check for the url existence', {
-      params,
-    });
-    return null;
-  }
-  const query: UrlQuery = {};
+// Check for existence of url.
+// TODO Do proper return type using ZOD
+export const urlExists = async (params: UrlQuery) => {
+  const condition: Prisma.UrlWhereInput[] = [];
 
-  if (params.userId) {
-    query.userId = params.userId;
-  }
-  if (params.originalUrl) {
-    query.originalUrl = params.originalUrl;
-  }
-
-  if (params.shortUrl) {
-    query.shortUrl = params.shortUrl;
-  }
-
-  return Url.findOne(query);
+  if (params.shortUrl) condition.push({ shortUrl: params.shortUrl });
+  if (params.orignalUrl) condition.push({ orignalUrl: params.orignalUrl });
+  if (condition.length === 0) return null;
+  return prisma.url.findFirst({
+    where: {
+      userId: params.userId,
+      OR: condition,
+    },
+  });
 };
 
 // Compare two object ids.
