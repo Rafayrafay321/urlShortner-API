@@ -70,5 +70,5 @@ model Click {
   clickCounts Int
   createdAt   DateTime @default(now())
 
-  url Url @relation(fields: [urlId], references: [id])
+  url Url @relation(fields: [urlId], references: [id], onDelete: Cascade)
 }
