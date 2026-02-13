@@ -2,14 +2,11 @@
 import app from '@/app';
 import config from '@/config/config';
 import logger from '@/lib/winston';
-import { connectDatabase, disconnectDatabase } from '@/lib/mongoose';
+
 
 (async (): Promise<void> => {
   try {
-    // Establishing MongoDB connection!
-    if (config.NODE_ENV !== 'test') {
-      await connectDatabase();
-    }
+
 
     // Start the server and listen on the configured port.
     app.listen(config.PORT, () => {
@@ -29,9 +26,7 @@ import { connectDatabase, disconnectDatabase } from '@/lib/mongoose';
 // handle gracefull server shutdown on termination signals (e.g: SIGINT,SIGTERM)
 const serverTermination = async (signal: NodeJS.Signals): Promise<void> => {
   try {
-    if (config.NODE_ENV !== 'test') {
-      await disconnectDatabase();
-    }
+
     logger.info('Server Shutdown', { signal });
     process.exit(0);
   } catch (error) {

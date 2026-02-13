@@ -1,6 +1,6 @@
 // Node modules
 
-import type { HydratedDocument, Model } from 'mongoose';
+
 
 // Custom Modules
 
@@ -52,11 +52,4 @@ export const compareIds = (userId: string, urlId: string): boolean => {
   return urlId === userId;
 };
 
-// Delete the document of provided Id.
-export const deleteDocument = async <T>(
-  id: string,
-  model: Model<T>,
-): Promise<HydratedDocument<T> | null> => {
-  const deletedDoc = await model.findByIdAndDelete(id);
-  return deletedDoc;
-};
+
