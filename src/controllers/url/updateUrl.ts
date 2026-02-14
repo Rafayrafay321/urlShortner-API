@@ -20,7 +20,7 @@ const updateUrl = async (
       throw new AppError(400, 'Bad Request', 'Not allowed.');
     }
     const originalUrl = req.body.url;
-    await prisma.url.updateMany({
+    const result = await prisma.url.updateMany({
       where: {
         id: urlId,
         userId: userId,
@@ -29,6 +29,10 @@ const updateUrl = async (
         orignalUrl: originalUrl,
       },
     });
+
+    if (result.count === 0) {
+      throw new AppError(404, 'Not Found', 'URL not found');
+    }
 
     res.status(200).json({
       code: 'Success',
