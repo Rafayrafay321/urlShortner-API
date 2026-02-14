@@ -1,89 +1,55 @@
 // Node modules
-import mongoose from 'mongoose';
-import type { HydratedDocument, Model, Types } from 'mongoose';
+
+
 
 // Custom Modules
-import logger from '@/lib/winston';
-import { IUser, User } from '@/models/user';
-import { Url } from '@/models/url';
-import { IUrl } from '@/models/url';
+
+import { prisma } from '@/config/prisma';
+import { Prisma } from '@prisma/client';
 
 // Types
 type UrlQuery = {
-  userId?: Types.ObjectId;
-  originalUrl?: string;
+  userId?: string;
+  orignalUrl?: string;
   shortUrl?: string;
 };
 
 type UserQuery = {
+  id?: string;
   email?: string;
-  userId?: Types.ObjectId;
-  refreshToken?: string;
 };
 
-// Function returning the whole document of user.
-export const userExists = async (
-  params: UserQuery,
-): Promise<HydratedDocument<IUser> | null> => {
-  if (mongoose.connection.readyState !== 1) {
-    logger.warn('Database not connected. Cannot check User existence.', {
-      params,
-    });
-    return null;
-  }
-  const query: UserQuery = {};
-  if (params.userId) {
-    query.userId = params.userId;
-  }
-  if (params.email) {
-    query.email = params.email;
-  }
-  if (params.refreshToken) {
-    query.refreshToken = params.refreshToken;
-  }
+// Check for existence of User.
+// TODO Do proper return type using ZOD
 
-  return User.findOne(query);
+export const userExists = async (params: UserQuery) => {
+  const condition: Prisma.UserWhereInput[] = [];
+
+  if (params.id) condition.push({ id: params.id });
+  if (params.email) condition.push({ email: params.email });
+  if (condition.length === 0) return null;
+  return prisma.user.findFirst({ where: { OR: condition } });
 };
 
-// Function returning whole document of the URL exisiting.
-export const urlExists = async (
-  params: UrlQuery,
-): Promise<HydratedDocument<IUrl> | null> => {
-  if (mongoose.connection.readyState !== 1) {
-    logger.warn('Database not connected. Cannot check for the url existence', {
-      params,
-    });
-    return null;
-  }
-  const query: UrlQuery = {};
+// Check for existence of url.
+// TODO Do proper return type using ZOD
+export const urlExists = async (params: UrlQuery) => {
+  const condition: Prisma.UrlWhereInput[] = [];
 
-  if (params.userId) {
-    query.userId = params.userId;
-  }
-  if (params.originalUrl) {
-    query.originalUrl = params.originalUrl;
-  }
-
-  if (params.shortUrl) {
-    query.shortUrl = params.shortUrl;
-  }
-
-  return Url.findOne(query);
+  if (params.shortUrl) condition.push({ shortUrl: params.shortUrl });
+  if (params.orignalUrl) condition.push({ orignalUrl: params.orignalUrl });
+  if (condition.length === 0) return null;
+  return prisma.url.findFirst({
+    where: {
+      userId: params.userId,
+      OR: condition,
+    },
+  });
 };
 
 // Compare two object ids.
-export const compareIds = (
-  userId: Types.ObjectId,
-  urlId: Types.ObjectId,
-): boolean => {
-  return urlId.equals(userId);
+export const compareIds = (userId: string, urlId: string): boolean => {
+  return urlId === userId;
 };
 
-// Delete the document of provided Id.
-export const deleteDocument = async <T>(
-  id: Types.ObjectId,
-  model: Model<T>,
-): Promise<HydratedDocument<T> | null> => {
-  const deletedDoc = await model.findByIdAndDelete(id);
-  return deletedDoc;
-};
+

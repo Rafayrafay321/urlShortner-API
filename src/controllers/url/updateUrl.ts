@@ -1,32 +1,39 @@
-// node Imports
-import { Types } from 'mongoose';
 // Types
 import { AppError } from '@/lib/appError';
-import { Url } from '@/models/url';
 import { Request, Response, NextFunction } from 'express';
+import { prisma } from '@/config/prisma';
 
 const updateUrl = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
+  // TODO validate with ZOD
   try {
-    const urlId = new Types.ObjectId(req.params.id);
-    const urlDoc = await Url.findById(urlId);
-    if (!urlDoc) {
-      throw new AppError(404, 'Not found', 'Url not found');
+    if (!req.userId) {
+      throw new AppError(401, 'Unauthorized', 'Not allowed.');
     }
+    const userId = req.userId.toString();
+    const urlId = req.params.id;
 
-    if (!urlDoc.userId.equals(req.userId)) {
-      throw new AppError(
-        403,
-        'Forbidden',
-        'You are not allowed to perform operation',
-      );
+    if (!urlId) {
+      throw new AppError(400, 'Bad Request', 'Not allowed.');
     }
-
     const originalUrl = req.body.url;
-    await Url.updateOne({ _id: urlDoc._id }, { $set: { originalUrl } });
+    const result = await prisma.url.updateMany({
+      where: {
+        id: urlId,
+        userId: userId,
+      },
+      data: {
+        orignalUrl: originalUrl,
+      },
+    });
+
+    if (result.count === 0) {
+      throw new AppError(404, 'Not Found', 'URL not found');
+    }
+
     res.status(200).json({
       code: 'Success',
       message: 'URL updated Successfully',

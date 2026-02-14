@@ -1,5 +1,5 @@
 // custom Imports
-import config from '@/config';
+import config from '@/config/config';
 import { revokeRefreshToken } from '@/lib/authentication';
 
 // types

@@ -33,6 +33,11 @@ export const urlValidator = body('url')
   .isURL({ require_protocol: true, require_tld: true })
   .withMessage('Invalid URL');
 
-export const mongoIdValidator = param('id')
-  .isMongoId()
-  .withMessage('Invalid ID format');
+export const idValidator = param('id').custom((value) => {
+  // Regex for CUID: starts with 'c', followed by 23-24 alphanumeric chars
+  const cuidRegex = /^c[a-z0-9]{24}$/i;
+  if (!cuidRegex.test(value)) {
+    throw new Error('Invalid CUID format');
+  }
+  return true;
+});

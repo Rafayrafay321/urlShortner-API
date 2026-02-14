@@ -1,12 +1,18 @@
-import { User, type IUser } from '@/models/user';
-import config from '@/config';
+import { prisma } from '@/config/prisma';
+import config from '@/config/config';
 import { hashPassword } from '@/lib/password';
 import { AppError } from '@/lib/appError';
 import { userExists } from '@/utils/index';
 
 import type { Request, Response, NextFunction } from 'express';
 
-type RequestBody = Pick<IUser, 'name' | 'email' | 'password' | 'role'>;
+// TODO Replace later with ZOD.
+type registerRequestBody = {
+  name: string;
+  email: string;
+  password: string;
+  role: 'User' | 'Admin';
+};
 
 const register = async (
   req: Request,
@@ -14,7 +20,7 @@ const register = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { name, email, password, role } = req.body as RequestBody;
+    const { name, email, password, role } = req.body as registerRequestBody;
 
     if (role === 'Admin' && !config.WHITELISTED_EMAILS?.includes(email)) {
       throw new AppError(
@@ -31,16 +37,18 @@ const register = async (
 
     const hashedPassword = await hashPassword(password);
 
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      role,
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role: role.toUpperCase() === 'ADMIN' ? 'ADMIN' : 'USER',
+      },
     });
 
     res.status(201).json({
       message: 'User Created Successfully',
-      User: {
+      user: {
         name: user.name,
         email: user.email,
         role: user.role,

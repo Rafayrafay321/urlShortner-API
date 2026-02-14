@@ -1,11 +1,14 @@
 import { verifyAccessToken, TokenPayload } from '@/lib/jwt';
 import { AppError } from '@/lib/appError';
 import { TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
-import { Types } from 'mongoose';
 
 import type { Request, Response, NextFunction } from 'express';
 
-const authMiddleware = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const authMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
     const authorization = req.headers.authorization;
     if (!authorization || !authorization.startsWith('Bearer')) {
@@ -14,8 +17,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction): 
     const accessToken = authorization.split(' ')[1];
 
     const { userId } = verifyAccessToken(accessToken) as TokenPayload;
-    const convertedUserId = new Types.ObjectId(userId);
-    req.userId = convertedUserId;
+    req.userId = userId;
     next();
   } catch (error) {
     if (error instanceof TokenExpiredError) {

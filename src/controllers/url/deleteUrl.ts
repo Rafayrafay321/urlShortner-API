@@ -1,35 +1,27 @@
 // Custom imports
+import { prisma } from '@/config/prisma';
 import { AppError } from '@/lib/appError';
-import { Url } from '@/models/url';
 
 // Types
-import type { Request, Response, NextFunction } from 'express';
+import { type Request, type Response, type NextFunction } from 'express';
 
-const deleteUrl = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
+const deleteUrl = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // 1. Find the document by its ID from the URL parameters.
-    const url = await Url.findById(req.params.id);
-
-    if (!url) {
-      throw new AppError(404, 'Not Found', 'No URL found with that ID.');
+    const { id } = req.params;
+    if (!req.userId) {
+      throw new AppError(401, 'Unauthorized', 'Not allowed.');
     }
-
-    // 3. Check for ownership. T
-    if (!url.userId.equals(req.userId)) {
-      throw new AppError(
-        403,
-        'Forbidden',
-        'You are not authorized to delete this URL.',
-      );
+    try {
+      await prisma.url.delete({
+        where: {
+          id: id,
+          userId: req.userId.toString(),
+        },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      throw new AppError(404, 'Not Found', 'Url not found or not authorized');
     }
-
-    // 4. If all checks pass, delete the document.
-    await Url.findByIdAndDelete(req.params.id);
-
     res.status(204).send();
   } catch (error) {
     next(error);

@@ -12,11 +12,11 @@ const NODE_ENV = process.env.NODE_ENV as NodeEnv;
 
 const config = {
   PORT: process.env.PORT!,
+  DB_URL: process.env.DB_URL,
   NODE_ENV,
   CORS_WHITELIST,
   LOG_LEVEL: process.env.LOG_LEVEL,
   WINDOW_MS: _1H_IN_MILLISECONDS,
-  MONGO_CONNECTION_URI: process.env.MONGO_CONNECTION_URI!,
   WHITELISTED_EMAILS: process.env.WHITELISTED_EMAILS?.split(','),
   SALT_ROUNDS: Number(process.env.SALT_ROUNDS!),
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET!,

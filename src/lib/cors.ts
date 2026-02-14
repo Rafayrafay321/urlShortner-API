@@ -2,7 +2,7 @@
 import type { CorsOptions } from 'cors';
 
 // Custom Modules
-import config from '@/config';
+import config from '@/config/config';
 
 const corsOptions: CorsOptions = {
   origin(requestOrigin, callback) {

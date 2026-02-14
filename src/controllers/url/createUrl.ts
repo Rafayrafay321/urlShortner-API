@@ -1,21 +1,22 @@
+import { prisma } from '@/config/prisma';
+import { AppError } from '@/lib/appError';
 import { genUniqueURL } from '@/lib/generateUniqueURL';
-import { Url } from '@/models/url';
 import { urlExists } from '@/utils';
 
 import type { Request, Response, NextFunction } from 'express';
-import type { Types } from 'mongoose';
 
 type RequestBody = { url: string };
 
-const createUrl = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
+const createUrl = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { url: originalUrl } = req.body as RequestBody;
-    const userId = req.userId as Types.ObjectId;
-    const alreadyExists = await urlExists({ originalUrl, userId });
+    if (!req.userId) {
+      throw new AppError(401, 'Unauthorized', 'Not allowed');
+    }
+
+    const userId = req.userId.toString();
+
+    const { url: orignalUrl } = req.body as RequestBody;
+    const alreadyExists = await urlExists({ orignalUrl, userId });
 
     if (alreadyExists) {
       res.status(200).json({
@@ -28,11 +29,17 @@ const createUrl = async (
 
     const shortUrl = await genUniqueURL();
 
-    await Url.create({
-      originalUrl,
-      shortUrl,
-      userId,
-      clicks: 0,
+    await prisma.url.create({
+      data: {
+        orignalUrl,
+        shortUrl,
+        userId,
+        click: {
+          create: {
+            clickCounts: 0,
+          },
+        },
+      },
     });
 
     res.status(201).json({
