@@ -75,11 +75,12 @@ model Click {
 }
 
 model ApiKey {
-  id        String   @id @default(cuid())
-  userId    String
-  keyHash   String   @unique
-  name      String
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  userId     String
+  keyHash    String   @unique
+  name       String
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime
 
   user User @relation(fields: [userId], references: [id])
 }
