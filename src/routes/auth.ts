@@ -1,5 +1,4 @@
 import { Router } from 'express';
-// import bcrypt from 'bcrypt';
 
 // custom imports
 import register from '@/controllers/auth/register';

@@ -4,6 +4,7 @@ import { Router } from 'express';
 import authRouter from '@/routes/auth';
 import urlRouter from '@/routes/url';
 import redirectRouter from '@/routes/redirect';
+import apiKeyRouter from '@/routes/apiKey';
 
 const router = Router();
 
@@ -19,6 +20,7 @@ router.get('/', (req, res) => {
 
 router.use('/auth', authRouter);
 router.use('/url', urlRouter);
+router.use('/keys', apiKeyRouter);
 
 // The redirect router should be last.
 router.use('/', redirectRouter);
