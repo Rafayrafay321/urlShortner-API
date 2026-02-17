@@ -21,8 +21,8 @@ app.use(cookieParser());
 app.use(compression());
 app.use(cors(corsOptions));
 
-// Register application routes under the root path
-app.use('/', router);
+// Register application routes under the /api path
+app.use('/api', router);
 
 // global Error Handeler
 app.use(errorHandler);

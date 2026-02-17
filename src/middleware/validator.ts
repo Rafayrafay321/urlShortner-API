@@ -1,10 +1,11 @@
 // Node imports
 import { z } from 'zod';
+import { fromZodError } from 'zod-validation-error';
 // Types
 import { Request, Response, NextFunction } from 'express';
 
 export const validate =
-  (schema: z.ZodTypeAny) =>
+  (schema: z.ZodSchema) =>
   (req: Request, res: Response, next: NextFunction) => {
     const result = schema.safeParse({
       body: req.body,
@@ -13,22 +14,17 @@ export const validate =
     });
 
     if (!result.success) {
-      const errorMessages = result.error.issues.map((issue) => ({
-        path: issue.path.join('.'),
-        message: issue.message,
-      }));
-
-      res.status(400).json({
+      const validationError = fromZodError(result.error);
+      return res.status(400).json({
         status: 'Validation Failed',
-        errors: errorMessages,
+        message: validationError.toString(),
       });
-      return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const validateData = result.data as any;
-    req.body = validateData.body;
-    req.params = validateData.params;
-    req.query = validateData.query;
+    const data = result.data as { body: unknown; params: unknown; query: unknown; };
+    req.body = data.body;
+    req.params = data.params as Record<string, string>;
+    req.query = data.query as Record<string, string | string[]>;
+
     return next();
   };
