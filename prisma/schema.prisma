@@ -24,6 +24,7 @@ model User {
 
   urls         Url[]
   refreshToken RefreshToken?
+  apikey       ApiKey[]
 
   @@index([email])
   @@map("users")
@@ -71,4 +72,14 @@ model Click {
   createdAt   DateTime @default(now())
 
   url Url @relation(fields: [urlId], references: [id], onDelete: Cascade)
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String
+  keyHash   String   @unique
+  name      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 }
