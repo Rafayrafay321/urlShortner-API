@@ -5,12 +5,7 @@ import config from '@/config/config';
 import { prisma } from '@/config/prisma';
 
 import type { Request, Response, NextFunction } from 'express';
-
-//TODO Replace later with ZOD
-type loginRequestBody = {
-  email: string;
-  password: string;
-};
+import { UserLoginInput } from '@/schemas/auth.schema';
 
 const login = async (
   req: Request,
@@ -18,7 +13,7 @@ const login = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { email, password } = req.body as loginRequestBody;
+    const { email, password } = req.body as UserLoginInput['body'];
 
     const user = await prisma.user.findUnique({ where: { email } });
 

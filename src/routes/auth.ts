@@ -6,8 +6,8 @@ import register from '@/controllers/auth/register';
 import login from '@/controllers/auth/login';
 import logout from '@/controllers/auth/logout';
 import refreshToken from '@/controllers/auth/refreshToken';
-import validationError from '@/middleware/validationError';
-import { registerValidator, loginValidator } from '@/validators/authValidators';
+import { validate } from '@/middleware/validator';
+import { userRegisterSchema, userLoginSchema } from '@/schemas/auth.schema';
 import expressRateLimit from '@/middleware/rateLimiter';
 
 const router = Router();
@@ -16,8 +16,7 @@ const router = Router();
 router.post(
   '/register',
   expressRateLimit('auth'),
-  registerValidator,
-  validationError,
+  validate(userRegisterSchema),
   register,
 );
 
@@ -25,8 +24,7 @@ router.post(
 router.post(
   '/login',
   expressRateLimit('auth'),
-  loginValidator,
-  validationError,
+  validate(userLoginSchema),
   login,
 );
 

@@ -1,7 +1,5 @@
 // Node modules
 
-
-
 // Custom Modules
 
 import { prisma } from '@/config/prisma';
@@ -51,5 +49,3 @@ export const urlExists = async (params: UrlQuery) => {
 export const compareIds = (userId: string, urlId: string): boolean => {
   return urlId === userId;
 };
-
-

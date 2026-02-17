@@ -5,14 +5,7 @@ import { AppError } from '@/lib/appError';
 import { userExists } from '@/utils/index';
 
 import type { Request, Response, NextFunction } from 'express';
-
-// TODO Replace later with ZOD.
-type registerRequestBody = {
-  name: string;
-  email: string;
-  password: string;
-  role: 'User' | 'Admin';
-};
+import { UserRegisterInput } from '@/schemas/auth.schema';
 
 const register = async (
   req: Request,
@@ -20,9 +13,10 @@ const register = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { name, email, password, role } = req.body as registerRequestBody;
+    const { name, email, password, role } =
+      req.body as UserRegisterInput['body'];
 
-    if (role === 'Admin' && !config.WHITELISTED_EMAILS?.includes(email)) {
+    if (role === 'ADMIN' && !config.WHITELISTED_EMAILS?.includes(email)) {
       throw new AppError(
         400,
         'Bad Request',

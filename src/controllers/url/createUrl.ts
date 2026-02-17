@@ -4,8 +4,7 @@ import { genUniqueURL } from '@/lib/generateUniqueURL';
 import { urlExists } from '@/utils';
 
 import type { Request, Response, NextFunction } from 'express';
-
-type RequestBody = { url: string };
+import { CreateUrlInput } from '@/schemas/url.schema';
 
 const createUrl = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -15,7 +14,7 @@ const createUrl = async (req: Request, res: Response, next: NextFunction) => {
 
     const userId = req.userId.toString();
 
-    const { url: orignalUrl } = req.body as RequestBody;
+    const { url: orignalUrl } = req.body as CreateUrlInput['body'];
     const alreadyExists = await urlExists({ orignalUrl, userId });
 
     if (alreadyExists) {

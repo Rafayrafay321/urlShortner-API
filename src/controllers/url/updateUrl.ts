@@ -1,4 +1,4 @@
-// Types
+// Custom Imports
 import { AppError } from '@/lib/appError';
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '@/config/prisma';
@@ -8,7 +8,6 @@ const updateUrl = async (
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
-  // TODO validate with ZOD
   try {
     if (!req.userId) {
       throw new AppError(401, 'Unauthorized', 'Not allowed.');
