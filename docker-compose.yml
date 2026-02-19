@@ -1,9 +1,36 @@
+version: "3.9"
+
 services:
+  postgres:
+    image: postgres:15
+    container_name: lynx-postgres
+    restart: always
+
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   api:
     build: .
+    container_name: lynx-api
     restart: always
+
     ports:
-      - '${PORT}:${PORT}'
+      - "${PORT}:${PORT}"
+
     environment:
-      - MONGO_URI=${MONGO_CONNECTION_URI}
-      - NODE_ENV=production
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:2970787rafay@postgres:5432/shortly
+
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:

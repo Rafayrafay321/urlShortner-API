@@ -1,148 +1,100 @@
-# Project Improvement TODO List
+he Environment Variable Audit
 
-This document outlines the tasks to make this URL shortener project industry-ready. The tasks are divided into categories, each with specific subtasks.
 
----
+   * `✓` Create `.env.example`: This is already DONE. We created this file in a previous step.
+   * Instruction Plan for Validation:
+       1. Test the Crash: In your terminal, temporarily rename your .env file: mv .env .env.bak.
+       2. Try to start your application: docker-compose up. Observe how it crashes. It will likely be an unclear error related to an undefined variable.
+       3. Stop the application (Ctrl+C) and rename your file back: mv .env.bak .env.
+       4. Implement Graceful Failure: Go to src/config/config.ts. At the top of the file, before the config object is defined, create a list of required
+          variable names (e.g., ['PORT', 'DB_URL', 'JWT_ACCESS_SECRET', ...]). Loop through this list and check if process.env[variableName] exists. If any
+          are missing, throw new Error() with a clear message like Missing required environment variables: JWT_ACCESS_SECRET. This will make the app fail
+          fast with a clear, actionable error message.
 
-## 1. 🚀 Core Features
+  2. The Docker "Cold Start" Test
 
-### 1.1. URL Redirection
 
-- [ ] **Create a new controller `src/controllers/url/redirectUrl.ts`**
-  - [ ] It should take a `shortUrl` from the request parameters.
-  - [ ] Find the corresponding `originalUrl` in the `Url` collection.
-  - [ ] If found, increment the `clicks` count for the URL.
-  - [ ] Redirect the user to the `originalUrl` with a `302 Found` status.
-  - [ ] If not found, respond with a `404 Not Found` error.
-- [ ] **Create a new route for redirection**
-  - [ ] Add a route `/:shortUrl` to `src/routes/url.ts` that uses the new `redirectUrl` controller.
-  - [ ] Make sure this is the last route to avoid conflicts with other routes like `/auth`. Consider creating a dedicated root-level route file for it.
+   * Instruction Plan:
+       1. Nuke the Environment: In your terminal, run docker-compose down -v. This will completely remove the containers, networks, and the database data
+          volume.
+       2. Create an `entrypoint.sh` script: In the root of your project, create a new file named entrypoint.sh.
+       3. Add Logic to the Script: Add the following lines to entrypoint.sh. This script tells the container to first run migrations and then start the
+          application.
 
-### 1.2. URL Management
 
-- [ ] **Implement URL Deletion**
-  - [ ] Create a controller to delete a URL by its ID.
-  - [ ] Add a `DELETE /url/:id` route, protected by `authMiddleware`.
-  - [ ] Ensure a user can only delete their own URLs.
-- [ ] **Implement URL Listing**
-  - [ ] Create a controller to list all URLs for the authenticated user.
-  - [ ] Add a `GET /url/my-urls` route, protected by `authMiddleware`.
-- [ ] **(Optional) Implement URL Editing**
-  - [ ] Create a controller to update the `originalUrl` of a short URL.
-  - [ ] Add a `PATCH /url/:id` route.
+   1         #!/bin/sh
+   2         echo "Running database migrations..."
+   3         npx prisma migrate deploy
+   4
+   5         echo "Starting the application..."
+   6         exec "$@"
+       4. Make the Script Executable: In your terminal, run chmod +x entrypoint.sh.
+       5. Update your `Dockerfile`: Open your Dockerfile. Find the CMD instruction at the end and replace it with this ENTRYPOINT instruction:
+   1         ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+   2         CMD ["npm", "run", "start"]
+          (Note: The path in `ENTRYPOINT` assumes your `WORKDIR` is `/usr/src/app`. Adjust if necessary.)
+       6. Run the Test: Now, run docker-compose up --build. Observe the logs. You should see the "Running database migrations..." message before the
+          application starts.
 
-### 1.3. User Features
 
-- [ ] **Implement "Refresh Token" Endpoint**
-  - [ ] Create a controller that takes a `refreshToken` from the cookies.
-  - [ ] Verify the refresh token.
-  - [ ] If valid, issue a new `accessToken`.
-  - [ ] Add a `POST /auth/refresh-token` route.
-  - [ ] Implement the `revokeRefreshToken` function in `src/lib/authentication.ts` that is called by `logout`. It should find the user by the refresh token and set their `refreshTokenStatus` to 'revoked' or nullify the token.
+  3. Production Build Optimization (Multi-Stage Build)
 
----
 
-## 2. 🛡️ Security & Robustness
+   * Instruction Plan:
+       1. Modify Your `Dockerfile`: Restructure your entire Dockerfile to use two stages.
+       2. Stage 1 - The "Builder":
+           * Start with FROM node:18-alpine AS builder.
+           * In this stage, copy your package*.json files, run npm install (this will include devDependencies), copy all your source code, and run npm run
+             build.
+       3. Stage 2 - The "Runtime":
+           * Start a new stage with FROM node:18-alpine.
+           * In this stage, copy package*.json again, but this time run npm install --only=production to get only the necessary production dependencies.
+           * Use COPY --from=builder /path/to/your/dist /app/dist to copy only the compiled JavaScript from the "builder" stage.
+           * Your ENTRYPOINT and CMD instructions from the previous step will go at the end of this stage.
 
-### 2.1. Refine Rate Limiting
+  4. Database Seeding & Migration Strategy
 
-- [ ] **Apply Rate Limiting to the new redirection route** to prevent abuse.
-- [ ] Consider making the rate limit values configurable via environment variables.
 
-### 2.2. Enhance Input Validation
+   * Instruction Plan:
+       1. Create a Seed File: In your prisma/ directory, create a new file named seed.ts.
+       2. Write the Seed Logic: Inside seed.ts, import your Prisma client. Write an async function that uses prisma.user.create() to create a test user.
+          Remember to hash the password for this user using your password utility. You can also create a test API key.
+       3. Configure `package.json`: Open your package.json and add the following section if it's not already there. This tells Prisma how to run your seed
+          script.
+   1         "prisma": {
+   2           "seed": "ts-node prisma/seed.ts"
+   3         }
+       4. Run the Seed: In your terminal, you can now run npx prisma db seed to populate your database with the test data.
 
-- [ ] **Add validation for URL ID parameters** (e.g., `isMongoId()`) in the new URL management routes.
-- [ ] Ensure all controllers that receive input use the `validationError` middleware.
+  5. Error Handling & Logging
 
-### 2.3. Production Hardening
 
-- [ ] **Conditional Mongoose Debugging**: In `src/lib/mongoose.ts`, only set `mongoose.set('debug', true);` if `config.NODE_ENV === 'development'`.
-- [ ] **Secure Cookies**: In `src/controllers/auth/login.ts`, ensure the `secure` flag for cookies is strictly `true` in production. It's already set, but double-check the logic. `httpOnly: config.NODE_ENV === 'production'` in `logout.ts` is a good example, apply it consistently.
+   * Instruction Plan:
+       1. This is already DONE! Your project already has a global error-handling middleware (errorHandler.ts).
+       2. Verify It: Use a tool like Postman or curl to send a POST request to your /api/auth/login endpoint with a malformed JSON body (e.g., missing a
+          closing brace {). You should get back a clean, well-formatted JSON error, not a giant HTML stack trace.
 
----
 
-## 3. 🛠️ Code Quality & Developer Experience
+  6. Deployment Readiness
 
-### 3.1. Implement Comprehensive Logging
 
-- [ ] **Complete Winston Setup**: Finish the Winston logger implementation in `src/lib/winston.ts`.
-  - [ ] Configure it to log to the console in development.
-  - [ ] (Optional) Configure it to log to a file or a logging service in production. The Logtail setup is a good start if you wish to use it.
-- [ ] **Replace All `console.log`/`console.error`**: Go through the project and replace all `console.*` calls with your new logger.
+   * Instruction Plan:
+       1. Create Health Check Route: In src/routes/index.ts, create a new route: router.get('/health', ...).
+       2. Create Health Check Controller: The controller for this route should be extremely simple. It should just respond with a status of 200 and a simple
+          JSON object, like res.status(200).json({ status: 'ok', uptime: process.uptime() });. This confirms the server process is alive and responsive.
 
-### 3.2. Standardize Error Handling
+  7. Documentation & Final Git Tag
 
-- [ ] **Create a Global Error Handler**: Implement a global error-handling middleware that catches all errors.
-  - [ ] This middleware should be the last one added with `server.use()`.
-  - [ ] It should send a standardized JSON error response.
-- [ ] **Use the `AppError` Class**: Refactor the code to `throw new AppError(...)` instead of sending error responses directly from controllers. The global error handler will catch these.
 
-### 3.3. Code Cleanup
+   * Instruction Plan:
+       1. Prisma Schema Comments: Open prisma/schema.prisma. Above each model and any complex fields, add a /// comment to explain its purpose.
+       2. Create a Postman Collection:
+           * Using the Postman app, create and save requests for all your main endpoints (register, login, create URL, reset password, etc.).
+           * Organize them into a collection.
+           * Export the entire collection as a JSON file.
+           * Create a new folder /docs in your project root and save the exported file there (e.g., /docs/API.postman_collection.json).
+       3. Tag Your Release: Once all the above steps are completed, committed, and pushed, run these commands to officially tag your v1.0.0 release:
 
-- [ ] **Fix Typos**: Correct typos like `attemps` -> `attempts` and `Sever Error` -> `Server Error` in `createUrl.ts`.
-- [ ] **Improve ESLint**: Enhance `eslint.config.mjs` with stricter rules, like ordering imports.
-- [ ] **Add `build` script to `package.json`**: ` "build": "tsc"`.
 
----
-
-## 4. 🧪 Testing
-
-### 4.1. Setup Testing Framework
-
-- [ ] **Install and configure a test runner** like `Jest` or `Vitest`.
-  - `npm install -D jest @types/jest ts-jest`
-  - Create a `jest.config.js` file.
-- [ ] **Add a `test` script** to `package.json`.
-
-### 4.2. Write Tests
-
-- [ ] **Unit Tests**:
-  - [ ] Write tests for utility functions in `src/lib` (e.g., `generateUrl`, `jwt`, `password`).
-- [ ] **Integration Tests**:
-  - [ ] Write tests for the API endpoints (auth, URL creation, redirection). This will involve setting up a test database.
-
----
-
-## 5. 📚 Documentation
-
-### 5.1. API Documentation
-
-- [ ] **Add API documentation.** A good option is to use Swagger/OpenAPI.
-  - [ ] You can use libraries like `swagger-jsdoc` and `swagger-ui-express` to auto-generate docs from JSDoc comments in your route files.
-- [ ] **Add JSDoc comments** to your controllers and routes explaining what they do, their parameters, and what they return.
-
-### 5.2. Project README
-
-- [ ] **Improve `README.md`** with:
-  - [ ] Detailed setup instructions.
-  - [ ] Environment variable guide (`.env.example`).
-  - [ ] A summary of available API endpoints.
-
----
-
-## 6. ☁️ DevOps
-
-### 6.1. Containerization
-
-- [ ] **Create a `Dockerfile`** for building a production-ready container image for the application.
-- [ ] **Add a `.dockerignore` file** to exclude `node_modules` and other unnecessary files from the image.
-
-### 6.2. Continuous Integration
-
-- [ ] **Set up a CI pipeline** (e.g., using GitHub Actions).
-  - [ ] Create a `.github/workflows/ci.yml` file.
-  - [ ] The pipeline should run on every push/pull request to the `main` branch.
-  - [ ] It should run linting, testing, and building to ensure code quality.
-
-<!-- Raw instructions.. -->
-
-Plans for version 2.
-Your project is already quite functional, but here are some features you could add to take it to the next level and make it a more complete portfolio
-piece:
-
-- Custom Short URLs: Allow users to choose their own custom alias for a URL (e.g., my.app/my-custom-link).
-- Analytics Dashboard: Track the number of clicks on each short URL. You could also log timestamps, user agents, referrers, and geographic location for each click and present this data on a simple dashboard.
-- QR Code Generation: For each shortened URL, generate a QR code that users can download.
-- User API Keys: Allow users to generate their own API keys so they can use your URL shortening service from their own applications.
-- - Link Expiration: Add an option to have a link automatically expire after a certain date or a certain number of clicks.
-- Password-Protected Links: Require a password to be entered before redirecting to the original URL for sensitive links.
+   1         git tag -a v1.0.0 -m "Initial production-ready release"
+   2         git push origin v1.0.0
