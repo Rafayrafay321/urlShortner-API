@@ -25,10 +25,36 @@ export const userRegisterSchema = z.object({
 
 export type UserRegisterInput = z.infer<typeof userRegisterSchema>;
 
-export const resetPasswordSchema = z.object({
+export const forgotPasswordSchema = z.object({
   body: z.object({
     email: emailField,
   }),
 });
 
+export type forgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z.object({
+  body: z.object({
+    password: passwordField,
+    passwordConfirmation: passwordField,
+  }),
+});
+
 export type resetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
+export const forgotPasswordTokenSchema = z.object({
+  query: z.object({
+    token: z
+      .string('Token is required')
+      .min(1, 'Token cannot be empty')
+      // Optional: Basic regex check for JWT structure (3 parts separated by dots)
+      .regex(
+        /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/,
+        'Invalid token format',
+      ),
+  }),
+});
+
+export type forgotPasswordTokeninput = z.infer<
+  typeof forgotPasswordTokenSchema
+>;

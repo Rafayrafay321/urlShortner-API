@@ -5,9 +5,15 @@ import register from '@/controllers/auth/register';
 import login from '@/controllers/auth/login';
 import logout from '@/controllers/auth/logout';
 import { forgotPassword } from '@/controllers/auth/forgotPassword';
+import { resetPassword } from '@/controllers/auth/resetPassword';
 import refreshToken from '@/controllers/auth/refreshToken';
 import { validate } from '@/middleware/validator';
-import { userRegisterSchema, userLoginSchema } from '@/schemas/auth.schema';
+import {
+  userRegisterSchema,
+  userLoginSchema,
+  resetPasswordSchema,
+  forgotPasswordTokenSchema,
+} from '@/schemas/auth.schema';
 import expressRateLimit from '@/middleware/rateLimiter';
 
 const router = Router();
@@ -34,6 +40,14 @@ router.post('/refresh-token', refreshToken);
 
 // Post route for forgot password.
 router.post('/forgot-password', forgotPassword);
+
+// Post route for reset-password
+router.post(
+  '/reset-password',
+  validate(resetPasswordSchema),
+  validate(forgotPasswordTokenSchema),
+  resetPassword,
+);
 
 // post route for user logout.
 router.post('/logout', logout);

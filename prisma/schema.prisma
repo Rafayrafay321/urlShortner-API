@@ -61,7 +61,7 @@ model RefreshToken {
 
 model PasswordResetToken {
   tokenId                String   @id @default(cuid())
-  passwordResetTokenHash String?
+  passwordResetTokenHash String?  @unique
   userId                 String   @unique
   tokenExpirey           DateTime
 

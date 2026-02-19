@@ -4,7 +4,7 @@ import {
   genereratepassResetToken,
   hashToken,
 } from '@/lib/generatePassResetToken';
-import { resetPasswordInput } from '@/schemas/auth.schema';
+import { forgotPasswordInput } from '@/schemas/auth.schema';
 import { userExists } from '@/utils';
 import config from '@/config/config';
 import { sendPasswordResetEmail } from '@/lib/resend';
@@ -17,7 +17,7 @@ export const forgotPassword = async (
   next: NextFunction,
 ) => {
   try {
-    const { email } = req.body as resetPasswordInput['body'];
+    const { email } = req.body as forgotPasswordInput['body'];
 
     const user = await userExists({ email });
 
