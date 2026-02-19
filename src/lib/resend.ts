@@ -17,7 +17,7 @@ export const sendPasswordResetEmail = async (
   });
   try {
     await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: config.EMAIL_FROM || 'onboarding@resend.dev',
       to: recipientEmail,
       subject: 'Your Password Reset Link',
       html: emailHtmlBody,

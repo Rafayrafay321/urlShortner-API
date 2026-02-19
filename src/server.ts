@@ -3,11 +3,8 @@ import app from '@/app';
 import config from '@/config/config';
 import logger from '@/lib/winston';
 
-
 (async (): Promise<void> => {
   try {
-
-
     // Start the server and listen on the configured port.
     app.listen(config.PORT, () => {
       logger.info(`Server listening at http://localhost:${config.PORT}`);
@@ -26,7 +23,6 @@ import logger from '@/lib/winston';
 // handle gracefull server shutdown on termination signals (e.g: SIGINT,SIGTERM)
 const serverTermination = async (signal: NodeJS.Signals): Promise<void> => {
   try {
-
     logger.info('Server Shutdown', { signal });
     process.exit(0);
   } catch (error) {

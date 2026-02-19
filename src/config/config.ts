@@ -17,6 +17,7 @@ const config = {
   CORS_WHITELIST,
   LOG_LEVEL: process.env.LOG_LEVEL,
   RESEND_API_KEY: process.env.RESEND_API_KEY,
+  EMAIL_FROM: process.env.EMAIL_FROM,
   CLIENT_URL: process.env.CLIENT_URL,
   WINDOW_MS: _1H_IN_MILLISECONDS,
   WHITELISTED_EMAILS: process.env.WHITELISTED_EMAILS?.split(','),
