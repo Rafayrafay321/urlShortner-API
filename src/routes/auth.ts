@@ -4,6 +4,7 @@ import { Router } from 'express';
 import register from '@/controllers/auth/register';
 import login from '@/controllers/auth/login';
 import logout from '@/controllers/auth/logout';
+import { forgotPassword } from '@/controllers/auth/forgotPassword';
 import refreshToken from '@/controllers/auth/refreshToken';
 import { validate } from '@/middleware/validator';
 import { userRegisterSchema, userLoginSchema } from '@/schemas/auth.schema';
@@ -28,7 +29,11 @@ router.post(
 );
 
 // Post route for refresh-token.
+
 router.post('/refresh-token', refreshToken);
+
+// Post route for forgot password.
+router.post('/forgot-password', forgotPassword);
 
 // post route for user logout.
 router.post('/logout', logout);

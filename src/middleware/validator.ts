@@ -21,10 +21,14 @@ export const validate =
       });
     }
 
-    const data = result.data as { body: unknown; params: unknown; query: unknown; };
+    const data = result.data as {
+      body: unknown;
+      params: unknown;
+      query: unknown;
+    };
     req.body = data.body;
-    req.params = data.params as Record<string, string>;
-    req.query = data.query as Record<string, string | string[]>;
+    Object.assign(req.params, data.params);
+    Object.assign(req.query, data.query);
 
     return next();
   };
