@@ -1,46 +1,43 @@
 # ---------- Build stage ----------
-FROM node:alpine AS builder
+FROM node:bookworm-slim AS builder
 
-# App directory
+# Install OpenSSL (still needed for Prisma CLI tasks)
+RUN apt-get update -y && apt-get install -y openssl
+
 WORKDIR /app
 
-# Install OpenSSL for prisma
-RUN apk add --no--cache openssl
-
-# Install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
-# Copy source code
 COPY . .
 
-# Generate Prisma Client
+# 1. Generate the client into your src/generated folder
 RUN npx prisma generate
 
-# Build TypeScript -> dist
+# 2. Build the app (tsc will now bundle the Prisma client into /dist)
 RUN npm run build
 
-# ---------- Production stage ----------
-FROM node:alpine
+# 3. Clean up dev dependencies
+RUN npm prune --production
 
-# Set environment
+# ---------- Production stage ----------
+FROM node:20-bookworm-slim 
+
+# Install OpenSSL for production
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
-# App directory
 WORKDIR /app
 
-# Install OpenSSL for prisma
-RUN apk add --no--cache openssl
+# Copy production node_modules (includes @prisma/client and @prisma/adapter-pg)
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./
 
-# Install production-only dependencies
-COPY package*.json ./
-RUN npm ci --only=production
-
-# Copy prisma schema (required at runtime)
-# Copy compiled output
+# 4. Copy the compiled code and Prisma files
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./ 
 
-# Run migrations then start server
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]

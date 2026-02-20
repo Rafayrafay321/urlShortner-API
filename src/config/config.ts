@@ -12,7 +12,7 @@ const NODE_ENV = process.env.NODE_ENV as NodeEnv;
 
 const config = {
   PORT: process.env.PORT!,
-  DB_URL: process.env.DB_URL,
+  DATABASE_URL: process.env.DATABASE_URL,
   NODE_ENV,
   CORS_WHITELIST,
   LOG_LEVEL: process.env.LOG_LEVEL,
