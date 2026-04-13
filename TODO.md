@@ -84,7 +84,7 @@ he Environment Variable Audit
           JSON object, like res.status(200).json({ status: 'ok', uptime: process.uptime() });. This confirms the server process is alive and responsive.
 
   7. Documentation & Final Git Tag
-
+      Im writing this from the AWS_EC2 instace.
 
    * Instruction Plan:
        1. Prisma Schema Comments: Open prisma/schema.prisma. Above each model and any complex fields, add a /// comment to explain its purpose.
